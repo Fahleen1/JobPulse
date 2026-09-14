@@ -19,7 +19,7 @@ coverage/
 .idea/
 .vscode/
 
-# Cursor plans and local agent state — never push
+# Cursor plans, product specs, and local agent state — never push
 .cursor/
 *.plan.md
 plans/

@@ -6,47 +6,59 @@ Real-time remote job aggregator for IT professionals. Search is free — Apply l
 
 ## Status
 
-Module 1 (data proof) is in progress: TypeScript scaffold and shared `NormalizedJob` types are in place. Ashby fetch, classifiers, and the live proof CLI come next.
+- **Module 1** data proof: complete (`npm run proof`)
+- **Module 2** foundation: Next.js + Tailwind + Netlify + Supabase schema in progress
 
 ## Requirements
 
 - Node.js 20+
+- Supabase project (free tier is fine)
+- Netlify site (already connected)
 
 ## Setup
 
 ```bash
 npm install
+cp .env.example .env.local
+# fill NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
 ```
 
-## How to test
+### Supabase schema
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. Open **SQL Editor** and run [`supabase/migrations/20260914120000_init.sql`](supabase/migrations/20260914120000_init.sql)
+3. Copy Project URL + anon key into `.env.local` and Netlify env vars
+
+### Netlify env vars
+
+| Name | Notes |
+|------|--------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key (safe for browser) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only; needed in Module 3 for ingestion writes |
+
+Redeploy after setting env vars. Confirm at `/health`.
+
+## Scripts
 
 | Command | What it does |
 |---------|----------------|
-| `npm test` | Vitest: types, Ashby client, adapter, boards, classifiers |
-| `npm run typecheck` | Strict TypeScript check |
-| `npm run proof:fixture` | Offline proof against `fixtures/ashby/Ashby.json` |
-| `npm run proof` | Live proof: fetch 10 Ashby boards → normalize → classify |
-| `npm run proof -- --verbose` | Same as live proof with extra fields |
-
-Module 1 exit check:
-
-```bash
-npm run typecheck && npm test && npm run proof:fixture && npm run proof
-```
-
-You should see trusted vs discovery-only dates and explicit vs unclear eligibility on adapted jobs.
-
+| `npm run dev` | Next.js local app |
+| `npm run build` | Production Next.js build |
+| `npm test` | Module 1 Vitest suite |
+| `npm run typecheck` | Next + ingestion TypeScript checks |
+| `npm run proof` | Live Ashby normalize/classify proof |
+| `npm run proof:fixture` | Offline proof against fixture |
 
 ## Project layout
 
 ```
-src/
-  ashby/          # Ashby client + raw API types
-  boards.ts       # 10 public Ashby board keys for Module 1
-  classify/       # Date + eligibility classifiers
-  types/          # Shared NormalizedJob shape
-  proof.ts        # CLI entry (`npm run proof`)
-fixtures/ashby/   # Offline Ashby response for tests
+app/                 # Next.js App Router (SSR pages)
+lib/supabase/        # Server Supabase client + health check
+supabase/migrations/ # SQL schema committed to git
+src/                 # Module 1 Ashby proof / future ingestion CLI
+fixtures/ashby/      # Offline Ashby fixture
+netlify.toml         # Next.js on Netlify via @netlify/plugin-nextjs
 ```
 
 ## License

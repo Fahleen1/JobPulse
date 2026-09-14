@@ -1,0 +1,22 @@
+{
+  "name": "jobpulse",
+  "version": "0.1.0",
+  "private": true,
+  "description": "JobPulse — real-time remote job aggregator for IT professionals",
+  "type": "module",
+  "scripts": {
+    "proof": "tsx src/proof.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  }
+}

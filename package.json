@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "proof": "tsx src/proof.ts",
+    "proof:fixture": "tsx src/proof.ts --fixture",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"

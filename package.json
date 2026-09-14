@@ -10,6 +10,9 @@
     "start": "next start",
     "proof": "tsx src/proof.ts",
     "proof:fixture": "tsx src/proof.ts --fixture",
+    "ingest:seed": "tsx src/ingest/seed-cli.ts",
+    "ingest:persist": "tsx src/ingest/persist-cli.ts",
+    "ingest:persist:fixture": "tsx src/ingest/persist-cli.ts --fixture",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.ingest.json"

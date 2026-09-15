@@ -40,7 +40,7 @@ export default async function HealthPage() {
           </li>
           <li>
             Set <code className="text-foreground">NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
-            <code className="text-foreground">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> in Netlify env vars.
+            <code className="text-foreground">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> in Vercel env vars.
           </li>
           <li>Redeploy, then reload this page.</li>
         </ol>

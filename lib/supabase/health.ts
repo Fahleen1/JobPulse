@@ -37,7 +37,7 @@ export async function getFoundationHealth(): Promise<FoundationHealth> {
       ok: false,
       checkedAt,
       message:
-        "Supabase env vars are missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY on Netlify.",
+        "Supabase env vars are missing. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY on Vercel (or in .env.local).",
       counts: { companies: null, sources: null, jobs: null },
     };
   }

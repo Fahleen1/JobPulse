@@ -15,7 +15,7 @@ Real-time remote job aggregator for IT professionals. Search is free — Apply l
 
 - Node.js 20+
 - Supabase project (free tier is fine)
-- Netlify site (already connected)
+- Vercel project (Next.js host)
 - GitHub Actions secrets for hourly ingest (public repo)
 
 ## Setup
@@ -33,15 +33,16 @@ cp .env.example .env.local
 2. Open **SQL Editor** and run migrations in order:
    - [`supabase/migrations/20260914120000_init.sql`](supabase/migrations/20260914120000_init.sql)
    - [`supabase/migrations/20260915120000_job_listings_view.sql`](supabase/migrations/20260915120000_job_listings_view.sql) (Module 4 feed view)
+   - [`supabase/migrations/20260915140000_job_listings_plausible_dates.sql`](supabase/migrations/20260915140000_job_listings_plausible_dates.sql) (exclude epoch publish times)
 3. Copy Project URL + anon key + **service role** key into `.env` / `.env.local`
 
-### Netlify env vars
+### Vercel env vars
 
 | Name | Notes |
 |------|--------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Project URL |
+| `NEXT_PUBLIC_SUPABASE_URL` | Project origin only (no `/rest/v1`) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key (safe for browser) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server-only; required for ingestion |
+| `SUPABASE_SERVICE_ROLE_KEY` | Not needed for the public site; required for local / GHA ingestion |
 
 ### GitHub Actions secrets
 
@@ -114,7 +115,6 @@ src/ingest/               # Seed, adapters, persist, scheduler
 src/ingest/adapters/      # Ashby + Tier A aggregators
 fixtures/                 # Offline fixtures
 .github/workflows/        # Hourly ingest workflow
-netlify.toml
 ```
 
 ## License

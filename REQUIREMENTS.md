@@ -380,7 +380,7 @@ Every tool below is free at the scale of a pilot. The document notes the real li
 | Resource | Free Limit | Mitigation |
 |----------|-----------|------------|
 | Database size | 500 MB | Prune ingestion logs after 14 days, archive closed jobs after 30 days, monitor storage including indexes |
-| Egress | 5 GB/month | Cache common queries 1--5 min, use keyset pagination (small payloads), serve static assets from Netlify CDN |
+| Egress | 5 GB/month | Cache common queries 1--5 min, use keyset pagination (small payloads), serve static assets from the Vercel CDN |
 | Inactivity pause | ~1 week | Set up a keep-alive cron ping (a simple health-check query every few days) |
 | Backups | Not included on free | Self-managed `pg_dump` export on a weekly schedule via GitHub Actions |
 
@@ -392,18 +392,18 @@ PostgreSQL full-text search using a GIN index on `title || ' ' || description`. 
 
 ### Hosting
 
-**Netlify Free** is the primary host. Unlike Vercel Hobby (restricted to personal, non-commercial use), Netlify's free plan **explicitly permits commercial projects**.
+**Vercel** is the primary host for the Next.js App Router app (SSR, ISR, API routes).
 
-| Resource | Free Limit | Notes |
-|----------|-----------|-------|
-| Credits | 300/month, hard cap | Cannot generate a bill; site pauses if exceeded |
-| Bandwidth | ~15 GB (at 20 credits/GB) | Sufficient for early traffic; static assets served from CDN |
-| Function compute | ~30 GB-hours (at 10 credits/GB-hr) | SSR/ISR/API routes run as serverless functions |
-| Web requests | ~1.5M (at 2 credits/10k) | |
-| Builds | 300 build minutes/month | |
-| Next.js support | Full App Router via OpenNext adapter | SSR, ISR, RSC, streaming, middleware all supported |
+| Resource | Notes |
+|----------|-------|
+| Framework | Next.js (auto-detected) |
+| Build | `npm run build` |
+| Env | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` |
+| Ingest | Keep on GitHub Actions — not as long Vercel serverless runs |
 
-**Fallback (only if Netlify doesn't work):** Cloudflare Workers via OpenNext. Blocker: free tier has a hard **10ms CPU per invocation** that Next.js SSR may exceed (Error 1102). Benchmark before committing. 100k requests/day, 5 cron triggers max.
+Confirm plan terms (Hobby vs Pro) for your commercial use case before launch.
+
+**Fallback:** Cloudflare Workers via OpenNext. Blocker: free tier has a hard **10ms CPU per invocation** that Next.js SSR may exceed (Error 1102). Benchmark before committing.
 
 ### Ingestion Scheduling
 
@@ -475,9 +475,9 @@ Build in this order. Each module has an exit condition --- do not move on until 
 
 ### Module 2: Foundation (Week 1)
 
-**What:** Initialize the Git repo, set up Next.js + TypeScript + Tailwind, create Supabase project, write SQL migrations for all tables, deploy a test page to Netlify to confirm SSR works within the free credit budget.
+**What:** Initialize the Git repo, set up Next.js + TypeScript + Tailwind, create Supabase project, write SQL migrations for all tables, deploy a test page to Vercel to confirm SSR works.
 
-**Exit condition:** A server-rendered page that queries the database and returns a result is live on Netlify. Secrets are in environment variables, not in code.
+**Exit condition:** A server-rendered page that queries the database and returns a result is live on Vercel. Secrets are in environment variables, not in code.
 
 ### Module 3: Reliable Ingestion Pipeline (Week 2)
 
@@ -558,7 +558,7 @@ Build in this order. Each module has an exit condition --- do not move on until 
 | **Descriptions and logos** | Do not assume logos or full descriptions are freely reusable. Use authorized content only. When in doubt, link to the source rather than reproducing. Initials-based fallback for logos. |
 | **Privacy** | No resumes or applicant data at launch. Minimize analytics. Publish a privacy notice. Review EU/regional rules before adding accounts, tracking, or alerts. |
 | **Wrong geography / scams** | Preserve employer location restrictions verbatim. Never infer worldwide. Add report and suppression paths. Verify company-to-ATS relationships. |
-| **Cost and quotas** | Monitor Netlify credits, Supabase storage, and GitHub Actions minutes. Keep SQL migrations and data exports portable. Keep adapters replaceable. Free plans and API terms can change at any time. |
+| **Cost and quotas** | Monitor Vercel usage, Supabase storage, and GitHub Actions minutes. Keep SQL migrations and data exports portable. Keep adapters replaceable. Free plans and API terms can change at any time. |
 | **Source API changes** | Runtime schema validation on every fetch. If an adapter sees an unexpected response shape, it logs an error and skips that source rather than writing bad data. Contract tests that alert on schema drift. |
 | **Supabase inactivity pause** | Keep-alive cron ping every few days. |
 
@@ -583,7 +583,7 @@ Build in this order. Each module has an exit condition --- do not move on until 
 3. **Middle East sources:** Bayt, Naukrigulf, etc. may not have public APIs. Research whether dedicated local board APIs exist or if Tier A aggregators already cover the region.
 4. **Recheck all API endpoints and free-tier limits** before starting Module 1. The endpoints in this document were verified as of September 2026.
 5. **Data retention policy:** Decide how long to keep closed job records (proposed: 30 days, then archive to hash-only for repost detection).
-6. **Netlify credit spike:** Deploy a representative SSR page early (Module 2) and measure actual credit consumption to confirm the free tier is viable for your expected page count.
+6. **Host usage spike:** Deploy a representative SSR page early (Module 2) and measure actual usage to confirm the chosen Vercel plan is viable for your expected page count.
 
 ---
 

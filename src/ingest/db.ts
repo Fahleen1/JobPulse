@@ -47,7 +47,7 @@ export function getIngestDbEnv(): IngestDbEnv {
   }
   if (!serviceRoleKey) {
     throw new Error(
-      "Missing SUPABASE_SERVICE_ROLE_KEY. Add it to .env / Netlify / GitHub Actions secrets — never expose it to the browser.",
+      "Missing SUPABASE_SERVICE_ROLE_KEY. Add it to .env / GitHub Actions secrets — never expose it to the browser.",
     );
   }
 

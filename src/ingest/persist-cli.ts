@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { adaptAshbyJobs } from "../ashby/adapter.js";
 import type { AshbyJob } from "../ashby/types.js";
 import { ASHBY_BOARDS } from "../boards.js";
-import { getAdapterForSource } from "./adapters/ashby.js";
+import { getAdapterForSource } from "./adapters/registry.js";
 import { createIngestClient } from "./db.js";
 import { ingestFetchedJobs } from "./ingest-source.js";
 import { loadIngestEnv } from "./load-env.js";

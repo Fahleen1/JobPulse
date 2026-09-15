@@ -1,13 +1,13 @@
 import { createIngestClient } from "./db.js";
 import { loadIngestEnv } from "./load-env.js";
-import { seedAshbyRegistry } from "./seed.js";
+import { seedIngestRegistry } from "./seed.js";
 
 async function main(): Promise<void> {
   loadIngestEnv();
   const client = createIngestClient();
-  const result = await seedAshbyRegistry(client);
+  const result = await seedIngestRegistry(client);
   console.log(
-    `Seeded Ashby registry: companies=${result.companiesUpserted} sources=${result.sourcesUpserted}`,
+    `Seeded registry: ashby_companies=${result.companiesUpserted} total_sources=${result.sourcesUpserted} aggregators=${result.aggregatorSourcesUpserted} adzuna=${result.adzunaEnabled}`,
   );
 }
 

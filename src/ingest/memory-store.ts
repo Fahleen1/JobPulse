@@ -1,3 +1,7 @@
+import {
+  normalizeRegionForMatch,
+  normalizeTitleForMatch,
+} from "./dedup.js";
 import type { IngestionRunInput, PersistStore } from "./persist.js";
 import type {
   CompanyRecord,
@@ -5,6 +9,14 @@ import type {
   JobSourceRecord,
   SourceRecord,
 } from "./types.js";
+
+const ATS = new Set([
+  "ashby",
+  "greenhouse",
+  "lever",
+  "smartrecruiters",
+  "workday",
+]);
 
 /**
  * In-memory PersistStore for ingest unit tests (no live DB required).
@@ -28,6 +40,33 @@ export class MemoryPersistStore implements PersistStore {
     return this.companies.get(id) ?? null;
   }
 
+  async upsertCompany(input: {
+    name: string;
+    canonicalDomain: string;
+    careerUrl?: string | null;
+  }): Promise<CompanyRecord> {
+    for (const company of this.companies.values()) {
+      if (company.canonical_domain === input.canonicalDomain) {
+        const next = {
+          ...company,
+          name: input.name,
+          career_url: input.careerUrl ?? company.career_url,
+        };
+        this.companies.set(company.id, next);
+        return next;
+      }
+    }
+    const row: CompanyRecord = {
+      id: crypto.randomUUID(),
+      name: input.name,
+      canonical_domain: input.canonicalDomain,
+      career_url: input.careerUrl ?? null,
+      logo_url: null,
+    };
+    this.companies.set(row.id, row);
+    return row;
+  }
+
   async findJobSource(
     sourceId: string,
     externalId: string,
@@ -44,6 +83,99 @@ export class MemoryPersistStore implements PersistStore {
     return [...this.jobSources.values()].filter(
       (row) => row.source_id === sourceId && row.closed_at === null,
     );
+  }
+
+  async findJobIdByCanonicalUrl(canonicalUrl: string): Promise<string | null> {
+    for (const row of this.jobSources.values()) {
+      if (row.closed_at === null && row.canonical_url === canonicalUrl) {
+        return row.job_id;
+      }
+    }
+    return null;
+  }
+
+  async findFuzzyJobId(input: {
+    companyId: string;
+    normalizedTitle: string;
+    normalizedRegion: string;
+    contentHash: string;
+  }): Promise<string | null> {
+    for (const row of this.jobSources.values()) {
+      if (row.closed_at !== null || row.content_hash !== input.contentHash) {
+        continue;
+      }
+      const job = this.jobs.get(row.job_id);
+      if (!job || job.company_id !== input.companyId) {
+        continue;
+      }
+      if (
+        normalizeTitleForMatch(job.title) === input.normalizedTitle &&
+        normalizeRegionForMatch(job.region_text) === input.normalizedRegion
+      ) {
+        return job.id;
+      }
+    }
+    return null;
+  }
+
+  async findPreferredAtsTypeForJob(jobId: string): Promise<string | null> {
+    let fallback: string | null = null;
+    for (const row of this.jobSources.values()) {
+      if (row.job_id !== jobId) {
+        continue;
+      }
+      const source = this.sources.get(row.source_id);
+      if (!source) {
+        continue;
+      }
+      if (ATS.has(source.ats_type)) {
+        return source.ats_type;
+      }
+      fallback ??= source.ats_type;
+    }
+    return fallback;
+  }
+
+  async listDueSources(now: Date, limit: number): Promise<SourceRecord[]> {
+    const nowMs = now.getTime();
+    return [...this.sources.values()]
+      .filter((source) => {
+        if (!source.enabled) {
+          return false;
+        }
+        if (Date.parse(source.next_poll_at) > nowMs) {
+          return false;
+        }
+        if (source.lease_until && Date.parse(source.lease_until) > nowMs) {
+          return false;
+        }
+        return true;
+      })
+      .sort(
+        (a, b) => Date.parse(a.next_poll_at) - Date.parse(b.next_poll_at),
+      )
+      .slice(0, limit);
+  }
+
+  async tryAcquireLease(
+    sourceId: string,
+    leaseUntil: string,
+    now: Date,
+  ): Promise<SourceRecord | null> {
+    const source = this.sources.get(sourceId);
+    if (!source || !source.enabled) {
+      return null;
+    }
+    const nowMs = now.getTime();
+    if (Date.parse(source.next_poll_at) > nowMs) {
+      return null;
+    }
+    if (source.lease_until && Date.parse(source.lease_until) > nowMs) {
+      return null;
+    }
+    const next = { ...source, lease_until: leaseUntil };
+    this.sources.set(sourceId, next);
+    return next;
   }
 
   async getJob(id: string): Promise<JobRecord | null> {
@@ -112,7 +244,6 @@ export class MemoryPersistStore implements PersistStore {
   ): Promise<void> {
     const prev = this.sources.get(id);
     if (!prev) {
-      // Allow update when seedSource wasn't used for lightweight persist tests.
       this.sources.set(id, {
         id,
         company_id: null,

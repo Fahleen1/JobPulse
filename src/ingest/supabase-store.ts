@@ -1,4 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  normalizeRegionForMatch,
+  normalizeTitleForMatch,
+} from "./dedup.js";
 import type {
   IngestionRunInput,
   PersistStore,
@@ -35,6 +39,26 @@ export class SupabasePersistStore implements PersistStore {
     return data;
   }
 
+  async upsertCompany(input: {
+    name: string;
+    canonicalDomain: string;
+    careerUrl?: string | null;
+  }): Promise<CompanyRecord> {
+    const { data, error } = await this.client
+      .from("companies")
+      .upsert(
+        {
+          name: input.name,
+          canonical_domain: input.canonicalDomain,
+          career_url: input.careerUrl ?? null,
+        },
+        { onConflict: "canonical_domain" },
+      )
+      .select("id, name, canonical_domain, career_url, logo_url")
+      .single();
+    return requireData(data, error, "upsertCompany");
+  }
+
   async findJobSource(
     sourceId: string,
     externalId: string,
@@ -65,6 +89,124 @@ export class SupabasePersistStore implements PersistStore {
       throw new Error(`listOpenJobSources: ${error.message}`);
     }
     return data ?? [];
+  }
+
+  async findJobIdByCanonicalUrl(canonicalUrl: string): Promise<string | null> {
+    const { data, error } = await this.client
+      .from("job_sources")
+      .select("job_id")
+      .eq("canonical_url", canonicalUrl)
+      .is("closed_at", null)
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      throw new Error(`findJobIdByCanonicalUrl: ${error.message}`);
+    }
+    return data?.job_id ?? null;
+  }
+
+  async findFuzzyJobId(input: {
+    companyId: string;
+    normalizedTitle: string;
+    normalizedRegion: string;
+    contentHash: string;
+  }): Promise<string | null> {
+    const { data, error } = await this.client
+      .from("job_sources")
+      .select(
+        "job_id, content_hash, jobs!inner(id, company_id, title, region_text, status)",
+      )
+      .eq("content_hash", input.contentHash)
+      .is("closed_at", null)
+      .eq("jobs.company_id", input.companyId)
+      .limit(50);
+    if (error) {
+      throw new Error(`findFuzzyJobId: ${error.message}`);
+    }
+
+    for (const row of data ?? []) {
+      const job = row.jobs as unknown as {
+        id: string;
+        company_id: string;
+        title: string;
+        region_text: string;
+      };
+      if (
+        normalizeTitleForMatch(job.title) === input.normalizedTitle &&
+        normalizeRegionForMatch(job.region_text) === input.normalizedRegion
+      ) {
+        return job.id;
+      }
+    }
+    return null;
+  }
+
+  async findPreferredAtsTypeForJob(jobId: string): Promise<string | null> {
+    const { data, error } = await this.client
+      .from("job_sources")
+      .select("source_id, sources!inner(ats_type)")
+      .eq("job_id", jobId);
+    if (error) {
+      throw new Error(`findPreferredAtsTypeForJob: ${error.message}`);
+    }
+
+    const ats = new Set([
+      "ashby",
+      "greenhouse",
+      "lever",
+      "smartrecruiters",
+      "workday",
+    ]);
+    let fallback: string | null = null;
+    for (const row of data ?? []) {
+      const type = (row.sources as unknown as { ats_type: string }).ats_type;
+      if (ats.has(type)) {
+        return type;
+      }
+      fallback ??= type;
+    }
+    return fallback;
+  }
+
+  async listDueSources(now: Date, limit: number): Promise<SourceRecord[]> {
+    const nowIso = now.toISOString();
+    const { data, error } = await this.client
+      .from("sources")
+      .select(
+        "id, company_id, ats_type, board_key, endpoint, enabled, baseline_at, last_success_at, next_poll_at, failure_count, lease_until",
+      )
+      .eq("enabled", true)
+      .lte("next_poll_at", nowIso)
+      .or(`lease_until.is.null,lease_until.lt.${nowIso}`)
+      .order("next_poll_at", { ascending: true })
+      .limit(limit);
+    if (error) {
+      throw new Error(`listDueSources: ${error.message}`);
+    }
+    return (data ?? []) as SourceRecord[];
+  }
+
+  async tryAcquireLease(
+    sourceId: string,
+    leaseUntil: string,
+    now: Date,
+  ): Promise<SourceRecord | null> {
+    const nowIso = now.toISOString();
+    const { data, error } = await this.client
+      .from("sources")
+      .update({ lease_until: leaseUntil })
+      .eq("id", sourceId)
+      .eq("enabled", true)
+      .lte("next_poll_at", nowIso)
+      .or(`lease_until.is.null,lease_until.lt.${nowIso}`)
+      .select(
+        "id, company_id, ats_type, board_key, endpoint, enabled, baseline_at, last_success_at, next_poll_at, failure_count, lease_until",
+      )
+      .maybeSingle();
+    if (error) {
+      throw new Error(`tryAcquireLease: ${error.message}`);
+    }
+    return (data as SourceRecord | null) ?? null;
   }
 
   async getJob(id: string): Promise<JobRecord | null> {

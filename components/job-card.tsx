@@ -9,7 +9,6 @@ import {
   roleLabel,
 } from "@/lib/jobs/format";
 import type { FeedMode, JobListItem } from "@/lib/jobs/types";
-import { SaveButton } from "./save-button";
 
 export function JobCard({
   job,
@@ -52,27 +51,17 @@ export function JobCard({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div className="min-w-0">
-                <Link
-                  href={`/jobs/${job.slug}`}
-                  className="block truncate text-lg font-medium text-foreground hover:text-primary"
-                >
-                  {job.title}
-                </Link>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  {job.company_name}
-                  {job.role_family ? ` · ${roleLabel(job.role_family)}` : ""}
-                  {job.seniority ? ` · ${job.seniority}` : ""}
-                </p>
-              </div>
-              <SaveButton
-                id={job.id}
-                slug={job.slug}
-                title={job.title}
-                company_name={job.company_name}
-              />
-            </div>
+            <Link
+              href={`/jobs/${job.slug}`}
+              className="block truncate text-lg font-medium text-foreground hover:text-primary"
+            >
+              {job.title}
+            </Link>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {job.company_name}
+              {job.role_family ? ` · ${roleLabel(job.role_family)}` : ""}
+              {job.seniority ? ` · ${job.seniority}` : ""}
+            </p>
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <Badge
                 variant={when.kind === "posted" ? "default" : "secondary"}

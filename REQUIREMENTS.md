@@ -24,7 +24,7 @@ Meanwhile, free aggregator APIs (Remotive, RemoteOK, Himalayas, Jobicy, etc.) al
 - Keyword search across title + company + tags.
 - Job detail page with description, salary (when available), tags, source, dates, location restrictions.
 - "Apply on company site" button that deep-links to the original application URL.
-- Saved jobs stored in browser `localStorage` (no sync, no account needed).
+- "Get alerts" nav CTA (coming soon toast) until accounts ship.
 - Company identity block on each job (name, domain, initials-based logo fallback).
 - Automated ingestion from Tier A aggregator APIs + Tier B ATS APIs on a schedule.
 - A handful of server-rendered SEO pages for core categories.
@@ -500,11 +500,11 @@ Build in this order. Each module has an exit condition --- do not move on until 
 - Homepage feed with filters (role, country, seniority, posted-within) and keyword search.
 - Job detail page with description, dates (using the correct clock), salary, eligibility, and "Apply on company site" button.
 - Category pages for role families with inventory.
-- `localStorage` saved jobs with save/unsave toggle.
+- "Get alerts" coming-soon CTA (accounts deferred).
 - Mobile-responsive layout.
 - Loading, empty, and error states.
 
-**Exit condition:** A complete mobile user journey works with real data: open feed, filter by role and country, view a job, click Apply (lands on company career page), save a job, see it in saved list.
+**Exit condition:** A complete mobile user journey works with real data: open feed, filter by role and country, view a job, click Apply (lands on company career page).
 
 ### Module 5: Quality and SEO (Week 4)
 
@@ -566,7 +566,7 @@ Build in this order. Each module has an exit condition --- do not move on until 
 
 ## 14. Phase 2: Monetization
 
-**Free forever:** Search, browse, filters, saved jobs, and direct apply links. This is the acquisition engine --- never gate it.
+**Free forever:** Search, browse, filters, and direct apply links. This is the acquisition engine --- never gate it. Synced saved jobs and alerts land with optional accounts.
 
 **Paid tier:** Resume parsing, ATS-readability score, auto-match, priority alerts, auto-fill, application tracker. Describe any ATS analysis as heuristic feedback, not a universal score. Get explicit consent before sending resume data to any AI provider.
 

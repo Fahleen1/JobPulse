@@ -1,4 +1,3 @@
-import { SaveButton } from "@/components/save-button";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -118,12 +117,6 @@ export default async function JobDetailPage({ params }: JobPageProps) {
         >
           Apply on company site
         </a>
-        <SaveButton
-          id={job.id}
-          slug={job.slug}
-          title={job.title}
-          company_name={job.company_name}
-        />
       </div>
 
       <Card className="mt-8">

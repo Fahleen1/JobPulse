@@ -1,10 +1,12 @@
+"use client";
+
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/", label: "Feed" },
-  { href: "/saved", label: "Saved" },
   { href: "/about", label: "About" },
 ] as const;
 
@@ -28,6 +30,19 @@ export function SiteHeader() {
               {link.label}
             </Link>
           ))}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              toast.message("Coming soon", {
+                description:
+                  "Job alerts and accounts are on the way. Browse and apply is free meanwhile.",
+              })
+            }
+          >
+            Get alerts
+          </Button>
         </nav>
       </div>
     </header>

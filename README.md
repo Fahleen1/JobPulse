@@ -9,7 +9,7 @@ Real-time remote job aggregator for IT professionals. Search is free — Apply l
 - **Module 1** data proof: complete
 - **Module 2** foundation: Next.js + Supabase schema + `/health`
 - **Module 3** ingestion pipeline: Parts 1–8 complete (Ashby + Tier A, scheduler, GHA)
-- **Module 4** usable product: feed, filters, job detail, categories, saved jobs
+- **Module 4** usable product: feed, filters, job detail, categories
 
 ## Requirements
 
@@ -74,10 +74,9 @@ Workflow: [`.github/workflows/ingest.yml`](.github/workflows/ingest.yml) (hourly
 | Path | Purpose |
 |------|---------|
 | `/` | Homepage feed (role, country, seniority, 24h/48h/7d, verified/discovered, `q`) |
-| `/jobs/[slug]` | Job detail + Apply + Save |
+| `/jobs/[slug]` | Job detail + Apply |
 | `/remote-jobs/[role]` | Category by role family |
 | `/remote-jobs/[role]/[country]` | Role + country |
-| `/saved` | localStorage saved jobs |
 | `/api/jobs`, `/api/jobs/[id]`, `/api/facets` | JSON API (pages use shared `lib/jobs` helpers) |
 
 **Required after pull:** run the `job_listings` migration or the feed will error.

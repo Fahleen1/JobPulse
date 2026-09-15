@@ -9,7 +9,8 @@ interface RemoteOkJob {
   description?: string;
   url?: string;
   apply_url?: string;
-  date?: string;
+  date?: string | number;
+  epoch?: number;
   location?: string;
   tags?: string[];
   salary_min?: number;
@@ -39,7 +40,7 @@ export class RemoteOkAdapter implements SourceAdapter {
           boardKey: source.board_key,
           companyName: job.company ?? null,
           locationText: job.location ?? null,
-          publishedAt: job.date ?? null,
+          publishedAt: job.date ?? job.epoch ?? null,
           skills: (job.tags ?? []).map(String),
           salaryMin: typeof job.salary_min === "number" ? job.salary_min : null,
           salaryMax: typeof job.salary_max === "number" ? job.salary_max : null,

@@ -194,7 +194,7 @@ export function buildNormalizedJob(input: {
   boardKey: string;
   companyName: string | null;
   locationText: string | null;
-  publishedAt: string | null;
+  publishedAt: string | number | null;
   roleHint?: string | null | undefined;
   seniorityHint?: string | null | undefined;
   employmentHint?: string | null | undefined;

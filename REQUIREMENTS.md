@@ -20,7 +20,7 @@ Meanwhile, free aggregator APIs (Remotive, RemoteOK, Himalayas, Jobicy, etc.) al
 ### In v1 (MVP)
 
 - Job feed sorted by recency (newest first), infinite-scroll or paginated.
-- Filters: role family, region/country, remote type, seniority, posted-within (24h / 48h).
+- Filters: role family, region/country, remote type, seniority, posted-within (24h / 48h / 7d).
 - Keyword search across title + company + tags.
 - Job detail page with description, salary (when available), tags, source, dates, location restrictions.
 - "Apply on company site" button that deep-links to the original application URL.
@@ -157,7 +157,7 @@ Freshness is the entire product differentiator. The system must never lie about 
 
 ### Two feeds
 
-**Verified feed (default):** Active remote jobs with a trusted employer timestamp between now-24h and now (or now-48h). This is what users see first.
+**Verified feed (default):** Active remote jobs with a trusted employer timestamp in the selected window (24h, 48h, or 7d). This is what users see first.
 
 **Discovered feed:** Uses `first_seen_at` only. Clearly labeled. Useful for sources that don't provide a publication date (like Lever).
 
@@ -342,7 +342,7 @@ Keyset pagination using `(created_at, id)` as the cursor. Default 20 results per
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/jobs` | Job feed. Params: `q`, `role`, `country`, `level`, `window` (24h/48h), `mode` (verified/discovered), `cursor`, `limit`. Validate all inputs. Return next cursor. |
+| GET | `/api/jobs` | Job feed. Params: `q`, `role`, `country`, `level`, `window` (24h/48h/7d), `mode` (verified/discovered), `cursor`, `limit`. Validate all inputs. Return next cursor. |
 | GET | `/api/jobs/:id` | Single job detail. Return 404 for missing, indicate "closed" for closed jobs. |
 | GET | `/api/facets` | Available filter values (role families, countries, seniority levels). Cache aggressively. |
 

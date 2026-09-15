@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyDate } from "./dates.js";
+import { classifyDate, normalizePublishedAtInput } from "./dates.js";
 
 describe("classifyDate", () => {
   const now = new Date("2026-09-14T12:00:00.000Z");
@@ -34,5 +34,26 @@ describe("classifyDate", () => {
     expect(result.quarantined).toBe(true);
     expect(result.date_class).toBe("discovery-only");
     expect(result.date_kind).toBe("datetime");
+  });
+
+  it("treats unix seconds as trusted datetimes", () => {
+    const seconds = Math.floor(Date.parse("2026-09-10T15:00:00.000Z") / 1000);
+    const result = classifyDate(seconds, now);
+    expect(result.date_class).toBe("trusted");
+    expect(result.source_published_at).toBe("2026-09-10T15:00:00.000Z");
+  });
+
+  it("rejects epoch / pre-2000 as discovery-only", () => {
+    expect(classifyDate(0, now).source_published_at).toBeNull();
+    expect(classifyDate("1970-01-01T00:00:00.000Z", now).date_class).toBe(
+      "discovery-only",
+    );
+  });
+});
+
+describe("normalizePublishedAtInput", () => {
+  it("multiplies unix seconds into an ISO instant", () => {
+    const seconds = Math.floor(Date.parse("2024-09-10T16:00:00.000Z") / 1000);
+    expect(normalizePublishedAtInput(seconds)).toBe("2024-09-10T16:00:00.000Z");
   });
 });

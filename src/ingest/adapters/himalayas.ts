@@ -49,7 +49,7 @@ export class HimalayasAdapter implements SourceAdapter {
         }
         const publishedAt =
           typeof job.pubDate === "number"
-            ? new Date(job.pubDate).toISOString()
+            ? job.pubDate
             : (job.pubDate ?? null);
         jobs.push(
           buildNormalizedJob({

@@ -9,6 +9,7 @@ Real-time remote job aggregator for IT professionals. Search is free — Apply l
 - **Module 1** data proof: complete
 - **Module 2** foundation: Next.js + Supabase schema + `/health`
 - **Module 3** ingestion pipeline: Parts 1–8 complete (Ashby + Tier A, scheduler, GHA)
+- **Module 4** usable product: feed, filters, job detail, categories, saved jobs
 
 ## Requirements
 
@@ -29,7 +30,9 @@ cp .env.example .env.local
 ### Supabase schema
 
 1. Create a project at [supabase.com](https://supabase.com)
-2. Open **SQL Editor** and run [`supabase/migrations/20260914120000_init.sql`](supabase/migrations/20260914120000_init.sql)
+2. Open **SQL Editor** and run migrations in order:
+   - [`supabase/migrations/20260914120000_init.sql`](supabase/migrations/20260914120000_init.sql)
+   - [`supabase/migrations/20260915120000_job_listings_view.sql`](supabase/migrations/20260915120000_job_listings_view.sql) (Module 4 feed view)
 3. Copy Project URL + anon key + **service role** key into `.env` / `.env.local`
 
 ### Netlify env vars
@@ -65,6 +68,19 @@ Workflow: [`.github/workflows/ingest.yml`](.github/workflows/ingest.yml) (hourly
 | `npm run ingest` | Due-source scheduler (max 5 parallel) |
 | `npm run ingest:persist:fixture` | Offline Ashby persist idempotency check |
 
+## Product routes (Module 4)
+
+| Path | Purpose |
+|------|---------|
+| `/` | Homepage feed (role, country, seniority, 24h/48h/7d, verified/discovered, `q`) |
+| `/jobs/[slug]` | Job detail + Apply + Save |
+| `/remote-jobs/[role]` | Category by role family |
+| `/remote-jobs/[role]/[country]` | Role + country |
+| `/saved` | localStorage saved jobs |
+| `/api/jobs`, `/api/jobs/[id]`, `/api/facets` | JSON API (pages use shared `lib/jobs` helpers) |
+
+**Required after pull:** run the `job_listings` migration or the feed will error.
+
 ## Module 3 local check
 
 ```bash
@@ -88,7 +104,9 @@ Supabase SQL views: `ingestion_health` (from migration). Table: `ingestion_runs`
 ## Project layout
 
 ```
-app/                      # Next.js App Router
+app/                      # Next.js App Router (feed, detail, categories, API)
+components/               # Feed UI, save button, site chrome
+lib/jobs/                 # Shared search + formatting (SSR + API)
 lib/supabase/             # Server Supabase client + health
 supabase/migrations/      # SQL schema
 src/ashby/                # Ashby client + adapter

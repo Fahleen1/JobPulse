@@ -21,7 +21,10 @@ export function normalizeSupabaseUrl(raw: string): string {
     throw new Error("Supabase URL must use https://");
   }
   // Strip accidental /rest/v1 or /auth/v1 suffixes.
-  url.pathname = url.pathname.replace(/\/(rest|auth|storage|functions)\/v1\/?$/, "");
+  url.pathname = url.pathname.replace(
+    /\/(rest|auth|storage|functions)\/v1\/?$/,
+    "",
+  );
   url.pathname = url.pathname.replace(/\/+$/, "") || "/";
   if (url.pathname !== "/") {
     throw new Error(
